@@ -471,7 +471,7 @@ for (file_cntr in 1:nmbr_of_files){
   polygon(flwr_val[,2],flwr_val[,3],col=NA, border=mm_colours[7], lwd=1) 
   #
   if(start_with_day_flower){background_image <- readPNG("Flower_Background_Day_B5.png")}
-  else{background_image <- readPNG("Flower_Background_Nigth_B3.png")}
+  else{background_image <- readPNG("Flower_Background_Night_B3.png")}
   #
   lim <- par()
   rasterImage(background_image, lim$usr[1], lim$usr[3], lim$usr[2], lim$usr[4])
