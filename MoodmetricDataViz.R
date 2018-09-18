@@ -1,4 +1,4 @@
-#
+# Updated for new db format; also Android support added and extended input time window
 #
 library("RSQLite")
 library(stringr)
@@ -11,7 +11,7 @@ wd_folder<-getwd()
 output_folder<-paste0(wd_folder,"/Outputs/")
 input_folder<-paste0(wd_folder,"/Inputs/")
 #
-db_files<-list.files(path=input_folder, pattern = "*.db")
+db_files<-list.files(path=input_folder, pattern = "*.db|sqlite")
 #
 nmbr_of_files <- length(db_files)
 #
@@ -28,10 +28,10 @@ base_time_numeric <- as.numeric(base_time)
 #
 time_window_in_hours_ok <- FALSE
 while (!time_window_in_hours_ok){  
-  time_window_in_hours <- readline(prompt="Time window in hours (1-24 hours): ")   # Read time window from console 
+  time_window_in_hours <- readline(prompt="Time window in hours (1-168 hours): ")   # Read time window from console 
   if ((as.numeric(time_window_in_hours)>0)&&(as.numeric(time_window_in_hours)<169)) {time_window_in_hours_ok<-TRUE}
   else { 
-    cat("Incorrect time window, please enter value in range 1-24","\n") 
+    cat("Incorrect time window, please enter value in range 1-168","\n") 
     }
   }
 #
@@ -68,7 +68,8 @@ for (file_cntr in 1:nmbr_of_files){
   # 
   con = dbConnect(RSQLite::SQLite(), dbname=db_name)
   #
-  MM_db_all = dbGetQuery( con,'select * from datalog' )
+  MM_db_all = dbGetQuery( con,'select datalog.time, datalog.scrn, datalog.mm, datalog.scl, datalog.steps, datalog.aa from datalog' )
+  # MM_db_all = dbGetQuery( con,'select * from datalog' )
   #
   wb_for_one = createWorkbook()
   sheet_for_one = createSheet(wb_for_one, "Results, Graphs")
@@ -374,30 +375,32 @@ for (file_cntr in 1:nmbr_of_files){
   #
   base_time_vector<-as.POSIXlt(base_time_numeric,origin = "1970-01-01 0:00:00")
   end_time_vector<-as.POSIXlt(end_time_numeric,origin = "1970-01-01 0:00:00")
-  base_time_vector[[2]]<-0
-  end_time_vector[[2]]<-0
+  base_time_vector$min <-0
+  #base_time_vector[[2]]<-0
+  end_time_vector$min <-0
+  #end_time_vector[[2]]<-0
   #
-  if ((base_time_vector[[3]]>=6)&&(base_time_vector[[3]]<=18)){
+  if ((base_time_vector$hour >=6)&&(base_time_vector$hour <=18)){
     start_with_day_flower<-TRUE
-    base_time_vector[[3]]<-6
+    base_time_vector$hour <-6
     } else {
       start_with_nigth_flower<-TRUE
-      if(base_time_vector[[3]]<6){
+      if(base_time_vector$hour <6){
         base_time_vector<-base_time_vector-hours(24)
-        base_time_vector[[3]]<-18
+        base_time_vector$hour <-18
         }else{ 
-          base_time_vector[[3]]<-18
+          base_time_vector$hour <-18
       }
     }
   #
-  if ((end_time_vector[[3]]>=6)&&(end_time_vector[[3]]<=18)){
-    end_time_vector[[3]]<-18
+  if ((end_time_vector$hour >=6)&&(end_time_vector$hour <=18)){
+    end_time_vector$hour <-18
   } else {
-    if(end_time_vector[[3]]<6){
-      end_time_vector[[3]]<-6
+    if(end_time_vector$hour < 6){
+      end_time_vector$hour <- 6
     }else{ 
-      end_time_vector<-end_time_vector+hours(24)
-      end_time_vector[[3]]<-6
+      end_time_vector <- end_time_vector + hours(24)
+      end_time_vector$hour <- 6
     }
   }
   #
